@@ -72,8 +72,8 @@ describe('OTP verification screen', () => {
       expect(textIn(renderer.root)).toContain(COPY.title);
       expect(textIn(renderer.root)).toContain(COPY.subtitle);
       expect(textIn(renderer.root)).toContain(COPY.submit);
-      expect(textIn(renderer.root)).toContain("Didn't receive the code?");
       expect(textIn(renderer.root)).toContain('Resend in 0:30');
+      expect(textIn(renderer.root)).not.toContain("Didn't receive the code?");
 
       for (let index = 1; index <= 6; index += 1) {
         const box = digit(renderer, index);
@@ -222,6 +222,7 @@ describe('OTP verification screen', () => {
     try {
       const resend = () => renderer.root.findByProps({ testID: 'otp_resend' });
       expect(textIn(resend())).toBe('Resend in 0:30');
+      expect(textIn(renderer.root)).not.toContain("Didn't receive the code?");
       expect(resend().props.disabled).toBe(true);
 
       await ReactTestRenderer.act(() => {
@@ -238,6 +239,8 @@ describe('OTP verification screen', () => {
         jest.advanceTimersByTime(29_000);
       });
       expect(textIn(resend())).toBe('Resend');
+      expect(textIn(renderer.root)).toContain(COPY.resendIdle);
+      expect(textIn(renderer.root)).not.toContain('Resend in 0:');
       expect(resend().props.disabled).toBe(false);
       expect(resend().props.accessibilityLabel).toBe(COPY.resendIdle);
 

@@ -44,7 +44,7 @@ export default function App() {
   const canResend = state.resendSecondsLeft <= 0;
   const complete = isComplete(state);
   const message = statusMessage(state.status);
-  const resendLabel = canResend ? COPY.resendAction : resendCountdown(state.resendSecondsLeft);
+  const countdownLabel = resendCountdown(state.resendSecondsLeft);
   const logo = isDark ? require('./assets/thamani-logo-white.png') : require('./assets/thamani-logo.png');
 
   const resend = () => {
@@ -76,18 +76,20 @@ export default function App() {
           }
         />
         <View style={styles.resendRow}>
-          <Text style={[styles.resendPrompt, { color: palette.text_secondary }]}>Didn't receive the code?</Text>
+          {canResend ? (
+            <Text style={[styles.resendPrompt, { color: palette.text_secondary }]}>{"Didn't receive the code? "}</Text>
+          ) : null}
           <Pressable
             testID="otp_resend"
             accessibilityRole="button"
-            accessibilityLabel={canResend ? COPY.resendIdle : resendLabel}
+            accessibilityLabel={canResend ? COPY.resendIdle : countdownLabel}
             accessibilityState={{ disabled: !canResend }}
             disabled={!canResend}
             onPress={resend}
             hitSlop={8}
           >
             <Text style={[styles.resendAction, { color: canResend ? palette.link : palette.text_secondary }]}>
-              {resendLabel}
+              {canResend ? COPY.resendAction : countdownLabel}
             </Text>
           </Pressable>
         </View>
@@ -183,7 +185,6 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'center',
     alignItems: 'center',
-    columnGap: 6,
     marginTop: 26,
   },
   resendPrompt: {
