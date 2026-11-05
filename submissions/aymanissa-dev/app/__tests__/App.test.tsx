@@ -1,12 +1,18 @@
-import React from 'react';
 import ReactTestRenderer from 'react-test-renderer';
-import App, { APP_NAME } from '../App';
 
-test('renders the app name', async () => {
+import App from '../App';
+import { COPY } from '../src/otp';
+
+test('renders the OTP screen', async () => {
+  jest.useFakeTimers();
   let renderer: ReactTestRenderer.ReactTestRenderer | undefined;
   await ReactTestRenderer.act(() => {
     renderer = ReactTestRenderer.create(<App />);
   });
-  expect(JSON.stringify(renderer!.toJSON())).toContain(APP_NAME);
+  const tree = JSON.stringify(renderer!.toJSON());
+  expect(tree).toContain(COPY.title);
+  expect(tree).toContain(COPY.subtitle);
   await ReactTestRenderer.act(() => renderer!.unmount());
+  jest.clearAllTimers();
+  jest.useRealTimers();
 });
