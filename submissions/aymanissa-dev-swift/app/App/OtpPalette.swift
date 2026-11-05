@@ -38,11 +38,10 @@ struct OtpPalette: Equatable {
     }
 
     private static func palette(from data: Data?, scheme: ColorScheme) -> OtpPalette {
-        if let data = data,
-           let palette = try? decode(data, scheme: scheme) {
+        if let data = data, let palette = try? decode(data, scheme: scheme) {
             return palette
         }
-        return (try? decode(Data(fallbackJSON.utf8), scheme: scheme)) ?? fallback(scheme)
+        return unresolved(scheme)
     }
 
     static func decode(_ data: Data, scheme: ColorScheme) throws -> OtpPalette {
@@ -51,35 +50,32 @@ struct OtpPalette: Equatable {
         return tokens.palette
     }
 
-    private static func fallback(_ scheme: ColorScheme) -> OtpPalette {
+    /// Monochrome stand-in used only when colours.json cannot be read.
+    private static func unresolved(_ scheme: ColorScheme) -> OtpPalette {
         let dark = scheme == .dark
-        func paint(_ light: String, _ night: String) -> Color {
-            HexColor.color(dark ? night : light)
-        }
+        let ink: Color = dark ? .white : .black
+        let paper: Color = dark ? .black : .white
+        let muted = Color.gray.opacity(dark ? 0.7 : 0.55)
         return OtpPalette(
-            sheet: paint("#FFFFFF", "#161A17"),
-            scrim: paint("#99000000", "#CC000000"),
-            textPrimary: paint("#111111", "#F5F5F5"),
-            textSecondary: paint("#5F6368", "#B0B5B1"),
-            digitFilledBackground: paint("#12361B", "#2E7D45"),
-            digitFilledText: paint("#FFFFFF", "#FFFFFF"),
-            digitFocusedBackground: paint("#FFFFFF", "#161A17"),
-            digitFocusedOutline: paint("#111111", "#F5F5F5"),
-            digitEmptyBackground: paint("#F1F1F1", "#262B27"),
-            digitEmptyOutline: paint("#E0E0E0", "#353B36"),
-            digitPlaceholder: paint("#9E9E9E", "#6F7570"),
-            buttonBackground: paint("#12361B", "#2E7D45"),
-            buttonText: paint("#FFFFFF", "#FFFFFF"),
-            buttonDisabledBackground: paint("#C9D1CB", "#2A302B"),
-            link: paint("#12361B", "#7BC795"),
-            success: paint("#1B7F3A", "#7BC795"),
-            error: paint("#C62828", "#EF9A9A")
+            sheet: paper,
+            scrim: .black.opacity(dark ? 0.8 : 0.6),
+            textPrimary: ink,
+            textSecondary: muted,
+            digitFilledBackground: ink,
+            digitFilledText: paper,
+            digitFocusedBackground: paper,
+            digitFocusedOutline: ink,
+            digitEmptyBackground: muted.opacity(0.25),
+            digitEmptyOutline: muted.opacity(0.45),
+            digitPlaceholder: muted,
+            buttonBackground: ink,
+            buttonText: paper,
+            buttonDisabledBackground: muted.opacity(0.35),
+            link: ink,
+            success: .green,
+            error: .red
         )
     }
-
-    private static let fallbackJSON = """
-    {"otp":{"light":{"sheet":"#FFFFFF","scrim":"#99000000","text_primary":"#111111","text_secondary":"#5F6368","digit_filled_bg":"#12361B","digit_filled_text":"#FFFFFF","digit_focused_bg":"#FFFFFF","digit_focused_outline":"#111111","digit_empty_bg":"#F1F1F1","digit_empty_outline":"#E0E0E0","digit_placeholder":"#9E9E9E","button_bg":"#12361B","button_text":"#FFFFFF","button_disabled_bg":"#C9D1CB","link":"#12361B","success":"#1B7F3A","error":"#C62828"},"dark":{"sheet":"#161A17","scrim":"#CC000000","text_primary":"#F5F5F5","text_secondary":"#B0B5B1","digit_filled_bg":"#2E7D45","digit_filled_text":"#FFFFFF","digit_focused_bg":"#161A17","digit_focused_outline":"#F5F5F5","digit_empty_bg":"#262B27","digit_empty_outline":"#353B36","digit_placeholder":"#6F7570","button_bg":"#2E7D45","button_text":"#FFFFFF","button_disabled_bg":"#2A302B","link":"#7BC795","success":"#7BC795","error":"#EF9A9A"}}}
-    """
 }
 
 struct OtpColorFile: Decodable {
